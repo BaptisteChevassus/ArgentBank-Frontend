@@ -325,3 +325,53 @@ body {
   opacity: 0.7;
   cursor: wait;
 }
+
+/* Username edit form (profile page) */
+.edit-name-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.edit-name-field {
+  display: grid;
+  grid-template-columns: 100px 180px;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.edit-name-field label {
+  text-align: right;
+  font-weight: bold;
+}
+
+.edit-name-field input {
+  padding: 5px;
+  font-size: 1rem;
+}
+
+.edit-name-field input:disabled {
+  background-color: #e6e6e6;
+  color: #777;
+}
+
+.edit-name-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.edit-name-buttons .edit-button {
+  width: 100px;
+}
+
+.edit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Error message readable on the dark background */
+.bg-dark .header .form-error {
+  color: #ff8a80;
+}
