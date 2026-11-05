@@ -4,9 +4,10 @@ import { loggedOut, logout } from './authSlice.js'
 
 export const fetchUserProfile = createAsyncThunk(
   'user/fetchProfile',
-  async (_, { getState, dispatch, rejectWithValue }) => {
+  async (_, { getState, dispatch, rejectWithValue, signal }) => {
     try {
-      return await getProfileRequest(getState().auth.token)
+      // signal: the HTTP request is really cancelled when the thunk is aborted
+      return await getProfileRequest(getState().auth.token, signal)
     } catch (error) {
       // Expired or invalid token: log the user out
       if (error.status === 401) dispatch(logout())
@@ -36,6 +37,8 @@ const userSlice = createSlice({
         state.profile = action.payload
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
+        // Cancelled request (logout or new login): nothing to report
+        if (action.meta.aborted) return
         state.status = 'failed'
         state.error = action.payload
       })

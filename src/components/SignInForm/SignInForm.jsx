@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   authErrorCleared,
@@ -13,7 +12,6 @@ function SignInForm() {
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
   const dispatch = useDispatch()
-  const navigate = useNavigate()
   const status = useSelector(selectAuthStatus)
   const error = useSelector(selectAuthError)
   const isLoading = status === 'loading'
@@ -23,12 +21,11 @@ function SignInForm() {
     return () => dispatch(authErrorCleared())
   }, [dispatch])
 
-  const handleSubmit = async (event) => {
+  // On success the token lands in the store and the SignIn page
+  // redirects to /profile by itself
+  const handleSubmit = (event) => {
     event.preventDefault()
-    const result = await dispatch(loginUser({ email, password, rememberMe }))
-    if (loginUser.fulfilled.match(result)) {
-      navigate('/profile')
-    }
+    dispatch(loginUser({ email, password, rememberMe }))
   }
 
   return (

@@ -9,7 +9,7 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { method = 'GET', token, body } = {}) {
+async function request(path, { method = 'GET', token, body, signal } = {}) {
   const headers = { 'Content-Type': 'application/json' }
   if (token) headers.Authorization = `Bearer ${token}`
 
@@ -19,8 +19,10 @@ async function request(path, { method = 'GET', token, body } = {}) {
       method,
       headers,
       body: body ? JSON.stringify(body) : undefined,
+      signal,
     })
-  } catch {
+  } catch (error) {
+    if (error.name === 'AbortError') throw error
     throw new ApiError('Unable to reach the server. Please try again later.', 0)
   }
 
@@ -35,7 +37,8 @@ async function request(path, { method = 'GET', token, body } = {}) {
 export const loginRequest = (email, password) =>
   request('/user/login', { method: 'POST', body: { email, password } })
 
-export const getProfileRequest = (token) => request('/user/profile', { token })
+export const getProfileRequest = (token, signal) =>
+  request('/user/profile', { token, signal })
 
 export const updateProfileRequest = (token, userName) =>
   request('/user/profile', { method: 'PUT', token, body: { userName } })

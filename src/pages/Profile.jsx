@@ -1,10 +1,11 @@
 import { useSelector } from 'react-redux'
 import Account from '../components/Account/Account.jsx'
 import { accounts } from '../data/accounts.js'
-import { selectProfile } from '../store/userSlice.js'
+import { selectProfile, selectProfileStatus } from '../store/userSlice.js'
 
 function Profile() {
   const profile = useSelector(selectProfile)
+  const status = useSelector(selectProfileStatus)
 
   return (
     <main className="main bg-dark">
@@ -15,6 +16,11 @@ function Profile() {
           <br />
           {profile ? `${profile.firstName} ${profile.lastName}!` : '…'}
         </h1>
+        {status === 'failed' && (
+          <p className="form-error" role="alert">
+            Unable to load your profile. Please refresh the page.
+          </p>
+        )}
         {/* Opens the username edit form in step 3 */}
         <button type="button" className="edit-button">
           Edit Name
