@@ -313,3 +313,15 @@ body {
   color: #00bc77;
   font-weight: bold;
 }
+
+/* Login error message */
+.form-error {
+  color: #d32f2f;
+  font-weight: bold;
+  margin: 0.5rem 0 0;
+}
+
+.sign-in-button:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}

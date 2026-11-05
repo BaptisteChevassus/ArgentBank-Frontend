@@ -1,16 +1,34 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  authErrorCleared,
+  loginUser,
+  selectAuthError,
+  selectAuthStatus,
+} from '../../store/authSlice.js'
 
 function SignInForm() {
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
+  const dispatch = useDispatch()
   const navigate = useNavigate()
+  const status = useSelector(selectAuthStatus)
+  const error = useSelector(selectAuthError)
+  const isLoading = status === 'loading'
 
-  const handleSubmit = (event) => {
+  // Don't show an old error when coming back to the form
+  useEffect(() => {
+    return () => dispatch(authErrorCleared())
+  }, [dispatch])
+
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    // Temporary: the API login call is added in step 2
-    navigate('/profile')
+    const result = await dispatch(loginUser({ email, password, rememberMe }))
+    if (loginUser.fulfilled.match(result)) {
+      navigate('/profile')
+    }
   }
 
   return (
@@ -18,11 +36,12 @@ function SignInForm() {
       <div className="input-wrapper">
         <label htmlFor="username">Username</label>
         <input
-          type="text"
+          type="email"
           id="username"
           autoComplete="username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
       </div>
       <div className="input-wrapper">
@@ -31,6 +50,7 @@ function SignInForm() {
           type="password"
           id="password"
           autoComplete="current-password"
+          required
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -44,8 +64,13 @@ function SignInForm() {
         />
         <label htmlFor="remember-me">Remember me</label>
       </div>
-      <button type="submit" className="sign-in-button">
-        Sign In
+      {error && (
+        <p className="form-error" role="alert">
+          {error}
+        </p>
+      )}
+      <button type="submit" className="sign-in-button" disabled={isLoading}>
+        {isLoading ? 'Signing in…' : 'Sign In'}
       </button>
     </form>
   )

@@ -1,17 +1,21 @@
+import { useSelector } from 'react-redux'
 import Account from '../components/Account/Account.jsx'
 import { accounts } from '../data/accounts.js'
+import { selectProfile } from '../store/userSlice.js'
 
 function Profile() {
+  const profile = useSelector(selectProfile)
+
   return (
     <main className="main bg-dark">
       <title>Argent Bank - Profile</title>
-      {/* Static name for now: comes from the API in step 2, editable in step 3 */}
       <div className="header">
         <h1>
           Welcome back
           <br />
-          Tony Jarvis!
+          {profile ? `${profile.firstName} ${profile.lastName}!` : '…'}
         </h1>
+        {/* Opens the username edit form in step 3 */}
         <button type="button" className="edit-button">
           Edit Name
         </button>
