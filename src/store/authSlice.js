@@ -3,14 +3,31 @@ import { loginRequest } from '../services/api.js'
 
 const TOKEN_KEY = 'argentBankToken'
 
+// Browser storage can throw (site data blocked, private mode, full quota).
+// The app must keep working: the token then only lives in memory.
+const safely = (action, fallback = null) => {
+  try {
+    return action()
+  } catch {
+    return fallback
+  }
+}
+
 // "Remember me" keeps the token after the browser is closed (localStorage),
 // otherwise it only lasts for the current tab session (sessionStorage)
 const readStoredToken = () =>
-  localStorage.getItem(TOKEN_KEY) ?? sessionStorage.getItem(TOKEN_KEY)
+  safely(
+    () => localStorage.getItem(TOKEN_KEY) ?? sessionStorage.getItem(TOKEN_KEY),
+  )
+
+const saveToken = (token, rememberMe) =>
+  safely(() =>
+    (rememberMe ? localStorage : sessionStorage).setItem(TOKEN_KEY, token),
+  )
 
 const clearStoredToken = () => {
-  localStorage.removeItem(TOKEN_KEY)
-  sessionStorage.removeItem(TOKEN_KEY)
+  safely(() => localStorage.removeItem(TOKEN_KEY))
+  safely(() => sessionStorage.removeItem(TOKEN_KEY))
 }
 
 export const loginUser = createAsyncThunk(
@@ -18,15 +35,12 @@ export const loginUser = createAsyncThunk(
   async ({ email, password, rememberMe }, { rejectWithValue }) => {
     try {
       const { token } = await loginRequest(email, password)
-      const storage = rememberMe ? localStorage : sessionStorage
-      storage.setItem(TOKEN_KEY, token)
+      saveToken(token, rememberMe) // never throws
       return token
     } catch (error) {
       // Same message for unknown email or wrong password: don't reveal which one
       const message =
-        error.status === 400
-          ? 'Invalid username or password.'
-          : error.message
+        error.status === 400 ? 'Invalid username or password.' : error.message
       return rejectWithValue(message)
     }
   },
@@ -45,8 +59,8 @@ const authSlice = createSlice({
       state.status = 'idle'
       state.error = null
     },
+    // Only the message: a login still in progress keeps its 'loading' status
     authErrorCleared(state) {
-      state.status = 'idle'
       state.error = null
     },
   },

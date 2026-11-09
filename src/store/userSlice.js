@@ -21,13 +21,8 @@ export const updateUserName = createAsyncThunk(
   'user/updateUserName',
   async (userName, { getState, dispatch, rejectWithValue }) => {
     try {
-      const updatedUser = await updateProfileRequest(
-        getState().auth.token,
-        userName,
-      )
-      // The API sends back the whole user (password hash included):
-      // only the username is kept
-      return updatedUser.userName
+      // The API answers with the updated profile (no password)
+      return await updateProfileRequest(getState().auth.token, userName)
     } catch (error) {
       if (error.status === 401) dispatch(logout())
       return rejectWithValue('Unable to save your username. Please try again.')
@@ -36,11 +31,14 @@ export const updateUserName = createAsyncThunk(
 )
 
 const initialState = {
-  profile: null, // { id, email, firstName, lastName, userName }
+  profile: null, // { id, email, firstName, lastName, userName, createdAt, updatedAt }
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
-  error: null,
   updateStatus: 'idle', // 'idle' | 'saving' | 'failed'
   updateError: null,
+  // ID of the request in progress: an answer arriving after a logout
+  // (or after a newer request) no longer matches and is ignored
+  profileRequestId: null,
+  updateRequestId: null,
 }
 
 const userSlice = createSlice({
@@ -54,32 +52,40 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchUserProfile.pending, (state) => {
+      .addCase(fetchUserProfile.pending, (state, action) => {
         state.status = 'loading'
-        state.error = null
+        state.profileRequestId = action.meta.requestId
       })
       .addCase(fetchUserProfile.fulfilled, (state, action) => {
+        if (action.meta.requestId !== state.profileRequestId) return
         state.status = 'succeeded'
         state.profile = action.payload
+        state.profileRequestId = null
       })
       .addCase(fetchUserProfile.rejected, (state, action) => {
-        // Cancelled request (logout or new login): nothing to report
+        // Outdated or cancelled request (logout, new login): nothing to report
+        if (action.meta.requestId !== state.profileRequestId) return
         if (action.meta.aborted) return
         state.status = 'failed'
-        state.error = action.payload
+        state.profileRequestId = null
       })
-      .addCase(updateUserName.pending, (state) => {
+      .addCase(updateUserName.pending, (state, action) => {
         state.updateStatus = 'saving'
         state.updateError = null
+        state.updateRequestId = action.meta.requestId
       })
       .addCase(updateUserName.fulfilled, (state, action) => {
+        if (action.meta.requestId !== state.updateRequestId) return
         state.updateStatus = 'idle'
+        state.updateRequestId = null
         // Every component reading the profile (header, profile page) updates
-        if (state.profile) state.profile.userName = action.payload
+        state.profile = action.payload
       })
       .addCase(updateUserName.rejected, (state, action) => {
+        if (action.meta.requestId !== state.updateRequestId) return
         state.updateStatus = 'failed'
         state.updateError = action.payload
+        state.updateRequestId = null
       })
       // Logging out wipes the user's data from the store
       .addCase(loggedOut, () => initialState)

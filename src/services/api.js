@@ -5,6 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3001/api/v1'
 export class ApiError extends Error {
   constructor(message, status) {
     super(message)
+    this.name = 'ApiError'
     this.status = status
   }
 }

@@ -62,11 +62,11 @@ function EditNameForm({ onClose }) {
       </div>
       <div className="edit-name-field">
         <label htmlFor="firstName">First name:</label>
-        <input type="text" id="firstName" value={profile.firstName} disabled />
+        <input type="text" id="firstName" value={profile.firstName} readOnly />
       </div>
       <div className="edit-name-field">
         <label htmlFor="lastName">Last name:</label>
-        <input type="text" id="lastName" value={profile.lastName} disabled />
+        <input type="text" id="lastName" value={profile.lastName} readOnly />
       </div>
       {error && (
         <p className="form-error" role="alert">

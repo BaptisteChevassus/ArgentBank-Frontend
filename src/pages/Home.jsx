@@ -13,7 +13,6 @@ function Home() {
           <Feature
             key={feature.id}
             icon={feature.icon}
-            iconAlt={feature.iconAlt}
             title={feature.title}
           >
             {feature.text}

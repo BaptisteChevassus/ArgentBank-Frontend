@@ -177,6 +177,8 @@ body {
 }
 
 .sign-in-icon {
+  display: block;
+  margin: 0 auto;
   font-size: 5rem;
 }
 
@@ -298,11 +300,6 @@ body {
   margin-right: 0.25rem;
 }
 
-.sign-in-icon {
-  display: block;
-  margin: 0 auto;
-}
-
 /* 404 page */
 .not-found {
   color: #fff;
@@ -351,9 +348,10 @@ body {
   font-size: 1rem;
 }
 
-.edit-name-field input:disabled {
+.edit-name-field input[readonly] {
   background-color: #e6e6e6;
-  color: #777;
+  color: #555;
+  cursor: default;
 }
 
 .edit-name-buttons {
